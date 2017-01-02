@@ -17,5 +17,22 @@
             	});
             }
         };
+    })
+    .directive('fsContentTooltip', function(contentService, $sce) {
+        return {
+            template: '<ng-transclude></ng-transclude><md-tooltip><span ng-bind-html="content"></span></md-tooltip>',
+            restrict: 'A',
+            transclude: true,
+            scope: {
+            	id: '@?fsContentTooltip'
+            },
+            link: function ($scope) {
+
+            	contentService.get($scope.id)
+            	.then(function(content) {
+            		$scope.content = $sce.trustAsHtml(content);
+            	});
+            }
+        };
     });
 })();
