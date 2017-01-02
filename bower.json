@@ -1,0 +1,19 @@
+{
+  "name": "fs-angular-content",
+  "description": "",
+  "main": [
+    "dist/content.js"
+  ],
+  "authors": [
+    "Firestitch Inc."
+  ],
+  "dependencies": {
+    "fs-angular-api": "^1.0.0"
+  },
+  "license": "MIT",
+  "ignore": [
+    "src",
+    ".gitignore"
+  ],
+  "private": false
+}
