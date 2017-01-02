@@ -3,7 +3,7 @@
     'use strict';
 
     angular.module('fs-angular-content',['fs-angular-api'])
-    .directive('fsContent', function(contentService, $sce) {
+    .directive('fsContent', function(fsContent, $sce) {
         return {
             template: '<span ng-bind-html="content"></span>',
             restrict: 'E',
@@ -12,14 +12,14 @@
             },
             link: function ($scope) {
 
-            	contentService.get($scope.id)
+            	fsContent.get($scope.id)
             	.then(function(content) {
             		$scope.content = $sce.trustAsHtml(content);
             	});
             }
         };
     })
-    .directive('fsContentTooltip', function(contentService, $sce) {
+    .directive('fsContentTooltip', function(fsContent, $sce) {
         return {
             template: '<ng-transclude></ng-transclude><md-tooltip><span ng-bind-html="content"></span></md-tooltip>',
             restrict: 'A',
@@ -29,14 +29,14 @@
             },
             link: function ($scope) {
 
-            	contentService.get($scope.id)
+            	fsContent.get($scope.id)
             	.then(function(content) {
             		$scope.content = $sce.trustAsHtml(content);
             	});
             }
         };
     })
-    .directive('fsContentModal', function(contentService, $mdDialog, $sce) {
+    .directive('fsContentModal', function(fsContent) {
         return {
             template: '<ng-transclude></ng-transclude>',
             restrict: 'A',
@@ -47,39 +47,8 @@
             },
             link: function ($scope, element) {
 
-            	contentService.get($scope.id)
-            	.then(function(content) {
-            		$scope.content = $sce.trustAsHtml(content);
-            	});
-
             	angular.element(element).on('click',function() {
-
-					var template = '<md-dialog aria-label="Tooltip">\
-					        <md-toolbar ng-show="title">\
-					            <div class="md-toolbar-tools"><h2>{{title}}</h2></div>\
-					        </md-toolbar>\
-					        <md-dialog-content>\
-					            <div class="md-dialog-content" ng-bind-html="content"></div>\
-					        </md-dialog-content>\
-					        <md-dialog-actions>\
-					            <md-button ng-click="close()">Close</md-button>\
-					        </md-dialog-actions>\
-					</md-dialog>';
-
-            		$mdDialog.show({
-	            						template: template,
-	            						controller: ['$scope','content','$mdDialog','title',function($scope, content, $mdDialog, title) {
-	            							$scope.content = content;
-	            							$scope.title = title;
-	            							$scope.close = function() {
-	            								$mdDialog.hide();
-	            							}
-	            						}],
-	            						locals: {
-		            						content: $scope.content,
-		            						title: $scope.title
-		            					}
-	            					});
+            		fsContent.modal($scope.id,{ title: $scope.title });
             	});
             }
         };
@@ -90,10 +59,11 @@
     'use strict';
 
     angular.module('fs-angular-content')
-    .factory('contentService', function (fsApi, $q) {
+    .factory('fsContent', function (fsApi, $q, $sce, $mdDialog) {
 
         var service = {
-            get: get
+            get: get,
+            modal: modal
         },
         contents = {};
 
@@ -115,6 +85,44 @@
            	});
         }
 
+        function modal(id, options) {
+
+        	options = options || {};
+
+			var template = '<md-dialog aria-label="Tooltip">\
+			        <md-toolbar ng-show="title">\
+			            <div class="md-toolbar-tools"><h2>{{title}}</h2></div>\
+			        </md-toolbar>\
+			        <md-dialog-content>\
+			            <div class="md-dialog-content" ng-bind-html="content"></div>\
+			        </md-dialog-content>\
+			        <md-dialog-actions>\
+			            <md-button ng-click="close()">Done</md-button>\
+			        </md-dialog-actions>\
+			</md-dialog>';
+
+			$mdDialog.show({
+	    						template: template,
+	    						controller: ['$scope','content','$mdDialog','title',function($scope, content, $mdDialog, title) {
+	    							$scope.content = content;
+	    							$scope.title = title;
+	    							$scope.close = function() {
+	    								$mdDialog.hide();
+	    							}
+	    						}],
+	    						locals: {
+	        						title: options.title
+	        					},
+	        					resolve: {
+	        						content: function() {
+	        							return get(id)
+							        	.then(function(content) {
+							        		return $sce.trustAsHtml(content);
+							        	});
+							        }
+	        					}
+	    					});
+        }
     });
 })();
 

@@ -2,13 +2,12 @@
 
 
 angular.module('app')
-  .controller('DemoCtrl', function ($scope) {
-
+  .controller('DemoCtrl', function ($scope, fsContent) {
 
     $scope.text = '';
-    
-    $scope.submit = function() {
-        alert('submit');
+
+    $scope.click = function() {
+    	fsContent.modal('test',{ title: 'title!!' });
     }
 });
 
